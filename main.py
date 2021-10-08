@@ -1,8 +1,11 @@
 
 def sub_cb(topic, msg):
-  print((topic, msg))
-  if topic == b'home/leak3/metrics' and msg == b'ping':
-    print('ESP received ping message')
+  # print((topic, msg))
+  last_receive = time.time()
+  print('%s: received message on topic %s with msg: %s' % (last_receive, topic, msg))
+  if topic == b'home/leak3/cmd' and msg == b'ping':
+    client.publish(topic_pub, b'pong')
+    print('sent pong')
 
 def connect_and_subscribe():
   global client_id, mqtt_server, topic_sub
@@ -16,7 +19,7 @@ def connect_and_subscribe():
 def restart_and_reconnect():
   print('Failed to connect to MQTT broker. Reconnecting...')
   time.sleep(10)
-  machine.reset()
+  machine.reset()  
 
 try:
   client = connect_and_subscribe()
@@ -26,6 +29,7 @@ except OSError as e:
 while True:
   try:
     client.check_msg()
+    time.sleep(1)
     if (time.time() - last_message) > message_interval:
       msg = b'Hello #%d' % counter
       client.publish(topic_pub, msg)
